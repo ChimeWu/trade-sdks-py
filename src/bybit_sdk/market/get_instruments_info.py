@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional, List, Union
-from bybit_sdk import BybitReqType, BybitRespType
+from typing import Optional, List
+from bybit_sdk import BybitReqType
 
 
 class GetInstrumentsInfoQueryParams(BaseModel):
@@ -126,11 +126,6 @@ class GetInstrumentsInfoLinearInverseResponseData(BaseModel):
     nextPageCursor: Optional[str] = None
 
 
-GetInstrumentsInfoLinearInverseResponse = BybitRespType[
-    GetInstrumentsInfoLinearInverseResponseData
-]
-
-
 # option
 class OptionPriceFilter(BaseModel):
     minPrice: str
@@ -165,19 +160,83 @@ class GetInstrumentsInfoOptionResponseData(BaseModel):
     nextPageCursor: Optional[str] = None
 
 
-GetInstrumentsInfoOptionResponse = BybitRespType[GetInstrumentsInfoOptionResponseData]
-
-# 定义最终的响应类型
-GetInstrumentsInfoResponse = Union[
-    GetInstrumentsInfoSpotResponseData,
-    GetInstrumentsInfoLinearInverseResponseData,
-    GetInstrumentsInfoOptionResponseData,
-]
-
-
-class GetInstrumentsInfoReqType(
-    BybitReqType[GetInstrumentsInfoQueryParams, GetInstrumentsInfoResponse]
+class GetSpotInstrumentsInfoReqType(
+    BybitReqType[GetInstrumentsInfoQueryParams, GetInstrumentsInfoSpotResponseData]
 ):
     METHOD: str = "GET"
     PATH: str = "/v5/market/instruments-info"
     SHOULD_SIGN: bool = False
+
+    def __init__(
+        self,
+        symbol: Optional[str] = None,
+        status: Optional[str] = None,
+        baseCoin: Optional[str] = None,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None,
+    ):
+        param = GetInstrumentsInfoQueryParams(
+            category="spot",
+            symbol=symbol,
+            status=status,
+            baseCoin=baseCoin,
+            limit=limit,
+            cursor=cursor,
+        )
+        super().__init__(param)
+
+
+class GetLinearInverseInstrumentsInfoReqType(
+    BybitReqType[
+        GetInstrumentsInfoQueryParams, GetInstrumentsInfoLinearInverseResponseData
+    ]
+):
+    METHOD: str = "GET"
+    PATH: str = "/v5/market/instruments-info"
+    SHOULD_SIGN: bool = False
+
+    def __init__(
+        self,
+        symbol: Optional[str] = None,
+        status: Optional[str] = None,
+        baseCoin: Optional[str] = None,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None,
+    ):
+        param = GetInstrumentsInfoQueryParams(
+            category="linear"
+            if symbol is None or not symbol.endswith("USD")
+            else "inverse",
+            symbol=symbol,
+            status=status,
+            baseCoin=baseCoin,
+            limit=limit,
+            cursor=cursor,
+        )
+        super().__init__(param)
+
+
+class GetOptionInstrumentsInfoReqType(
+    BybitReqType[GetInstrumentsInfoQueryParams, GetInstrumentsInfoOptionResponseData]
+):
+    METHOD: str = "GET"
+    PATH: str = "/v5/market/instruments-info"
+    SHOULD_SIGN: bool = False
+
+    def __init__(
+        self,
+        symbol: Optional[str] = None,
+        status: Optional[str] = None,
+        baseCoin: Optional[str] = None,
+        limit: Optional[int] = None,
+        cursor: Optional[str] = None,
+    ):
+        param = GetInstrumentsInfoQueryParams(
+            category="option",
+            symbol=symbol,
+            status=status,
+            baseCoin=baseCoin,
+            limit=limit,
+            cursor=cursor,
+        )
+        super().__init__(param)
